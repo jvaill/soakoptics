@@ -25,21 +25,27 @@ class Client
     pngFull = path.resolve("browsershots/png-full/#{pngFilename}")
     pngThumb = path.resolve("browsershots/png-thumb/#{pngFilename}")
     
-    @_lastHtml = @html
     @_filePaths =
       htm: htm
       pngFull: pngFull
       pngThumb: pngThumb
+    @_lastHtml = @html
+    
+    # return a clone as @_filePaths might change
+    filePaths = {}
+    filePaths[key] = value for key, value of @_filePaths
+    filePaths
   
   captureFull: (cb) =>
-    throw new Error('html must be set') unless @html?    
-    filePaths = @filePaths()
+    # capture these parameters to prevent changes between callbacks
+    [filePaths, html, viewportWidth, viewportHeight] = [@filePaths(), @html, @viewportWidth, @viewportHeight]
+    throw new Error('html must be set') unless html?
     
     # write the .htm unless it already exists
     writeHtm = =>
       fs.exists filePaths.htm, (exists) =>
         unless exists
-          fs.writeFile filePaths.htm, @html, (err) =>
+          fs.writeFile filePaths.htm, html, (err) =>
             throw err if err
             capturePng()
         else
@@ -47,23 +53,23 @@ class Client
     
     # capture the .png from the .htm
     capturePng = =>
-      if @viewportWidth? and @viewportHeight?
+      if viewportWidth? and viewportHeight?
         cutiecapt.options =
-          minWidth: @viewportWidth
-          minHeight: @viewportHeight
+          minWidth: viewportWidth
+          minHeight: viewportHeight
       else
         cutiecapt.options = {}
       
       cutiecapt.capture "file://#{filePaths.htm}", filePaths.pngFull, (err) =>
         throw err if err
-        cb filePaths.pngFull
+        cb? filePaths.pngFull
     
     # capture unless the .png already exists
     fs.exists filePaths.pngFull, (exists) =>
       unless exists
         writeHtm()
       else
-        cb filePaths.pngFull
+        cb? filePaths.pngFull
   
   captureThumb: (cb) =>
     THUMBNAIL_WIDTH = 256
@@ -74,18 +80,22 @@ class Client
     resizeFull = (pngFull) =>
       im.resize srcPath: filePaths.pngFull, dstPath: filePaths.pngThumb, width: THUMBNAIL_WIDTH, (err) =>
         throw err if err
-        cb filePaths.pngThumb
+        cb? filePaths.pngThumb
     
     # capture unless the .png already exists
-    fs.exists filePaths.pngThumb, (exists) =>
-      unless exists
-        # first capture a full browser shot
-        @captureFull => resizeFull()
-      else
-        cb filePaths.pngThumb
+    # use synchronous exists to prevent race conditions (e.g. @html changing before @captureFull() is called)
+    unless fs.existsSync(filePaths.pngThumb)
+      # first capture a full browser shot
+      @captureFull => resizeFull()
+    else
+      cb? filePaths.pngThumb
   
   capture: (cb) =>
     throw new Error('html must be set') unless @html?
-    @captureFull => @captureThumb => cb(@filePaths())
+    filePaths = @filePaths()
+    # in this case it's okay to only call @captureThumb() as it calls @captureFull() anyway
+    # doing @captureFull => @captureThumb => cb?(filePaths) might seem like a cleaner option
+    # but then we'd run into race conditions with options possibly changing between calls
+    @captureThumb => cb?(filePaths)
 
 module.exports = Client
