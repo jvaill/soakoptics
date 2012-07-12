@@ -7,8 +7,14 @@ im = require('imagemagick')
 cutiecapt.path = './bin/CutyCapt'
 
 class Client
-  constructor: (@socket, @siteId, @clientId, @url, @html, @viewportWidth, @viewportHeight, @scrollLeft, @scrollTop) ->
+  messages = []
+  constructor: (@socket, @siteId, @id, @url, @html, @viewportWidth, @viewportHeight, @scrollLeft, @scrollTop) ->
   ready: (@socket, @url, @html, @viewportWidth, @viewportHeight, @scrollLeft, @scrollTop) ->
+  scroll: (@scrollLeft, @scrollTop) ->
+  resize: (@viewportWidth, @viewportHeight) ->
+  message: (message) -> messages.push(message)
+  isConnected: -> @socket?
+  emit: (params...) -> @socket.emit(params...) if @isConnected()
   
   filePaths: (type) =>
     throw new Error('html must be set') unless @html?
