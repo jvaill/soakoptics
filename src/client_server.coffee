@@ -1,6 +1,7 @@
 {log} = require('util')
+helpers = require('./helpers')
 Client = require('./client')
-io = require('socket.io').listen(6294)
+io = require('socket.io').listen(4219)
 
 clients = {}
 exports.clients = clients
@@ -31,27 +32,33 @@ io.sockets.on 'connection', (socket) ->
       client = new Client(socket, siteId, clientId, url, html, viewportWidth, viewportHeight, scrollLeft, scrollTop)
       clients[siteId][clientId] = client
     
+    # HACK: prevent the server from connecting to itself :-)
+    #       eventually we'd probably want to disable javascript all together.. need to think about this
+    client.html = client.html.replace('/soakoptics.client.js', '')
     client.capture (paths) =>
-      emitAdmins siteId, 'captured', paths.pngFull, paths.pngThumb
+      paths = helpers.absPathToRelative(paths)
+      emitAdmins client.siteId, 'capture', client.id, paths.pngFull, paths.pngThumb
   
   socket.on 'disconnect', ->
     log 'client - disconnect'
-    emitAdmins client.siteId, 'disconnect', client.clientId
+    if client?
+      client.socket = null
+      emitAdmins(client.siteId, 'disconnected', client.id, client.clientId)
   
   socket.on 'scroll', (scrollLeft, scrollTop) ->
     log 'client - scroll'
     throw new Error('client null') unless client?
     client.scroll scrollLeft, scrollTop
-    emitAdmins client.siteId, 'scroll', scrollLeft, scrollTop
+    emitAdmins client.siteId, 'scroll', client.id, scrollLeft, scrollTop
   
   socket.on 'resize', (viewportWidth, viewportHeight) ->
     log 'client - resize'
     throw new Error('client null') unless client?
     client.resize viewportWidth, viewportHeight
-    emitAdmins client.siteId, 'resize', viewportWidth, viewportHeight
+    emitAdmins client.siteId, 'resize', client.id, viewportWidth, viewportHeight
   
   socket.on 'message', (message) ->
     log 'client - message'
     throw new Error('client null') unless client?
     client.message message
-    emitAdmins client.siteId, 'message', message
+    emitAdmins client.siteId, 'message', client.id, message

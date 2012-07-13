@@ -1,5 +1,8 @@
 {log} = require('util')
 fs = require('fs')
+path = require('path')
+http = require('http')
+paperboy = require('paperboy')
 
 init = ->
   directories = [
@@ -15,8 +18,16 @@ init = ->
       log "creating directory #{directory}"
       fs.mkdirSync(directory)
 
+startPaperboy = ->
+  webroot = path.resolve('browsershots')
+  server = http.createServer (req, res) ->
+    paperboy.deliver webroot, req, res
+  server.listen 2724
+
 log 'initializing'
 init()
+log 'starting paperboy'
+startPaperboy()
 
 # start the servers
 log 'starting client server'

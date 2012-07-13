@@ -90,7 +90,7 @@ class Client
     
     # capture unless the .png already exists
     # use synchronous exists to prevent race conditions (e.g. @html changing before @captureFull() is called)
-    unless fs.existsSync(filePaths.pngThumb)
+    unless fs.existsSync(filePaths.pngThumb) and fs.existsSync(filePaths.pngFull)
       # first capture a full browser shot
       @captureFull => resizeFull()
     else
