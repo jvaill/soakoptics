@@ -43,7 +43,7 @@ io.sockets.on 'connection', (socket) ->
     log 'client - disconnect'
     if client?
       client.socket = null
-      emitAdmins(client.siteId, 'disconnected', client.id, client.clientId)
+      emitAdmins client.siteId, 'disconnected', client.id
   
   socket.on 'scroll', (scrollLeft, scrollTop) ->
     log 'client - scroll'

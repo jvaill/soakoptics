@@ -10,7 +10,6 @@ exports.clients = null
 clientsInSite = (siteId, cb) ->
   if exports.clients?[siteId]?
     for id, client of exports.clients[siteId]
-      console.log client
       cb?(client) if client.isConnected()
 
 io.sockets.on 'connection', (socket) ->

@@ -1,6 +1,7 @@
 crypto = require('crypto')
 path = require('path')
 fs = require('fs')
+helpers = require('./helpers')
 cutiecapt = require('cutiecapt')
 im = require('imagemagick')
 
@@ -18,7 +19,7 @@ class Client
   
   filePaths: (type) =>
     throw new Error('html must be set') unless @html?
-    return @_filePaths if @_filePaths? and @_lastHtml == @html
+    return helpers.clone(@_filePaths) if @_filePaths? and @_lastHtml == @html
     
     # ensure we don't generate duplicates by having a checksum as the filename
     md5 = crypto.createHash('md5').update(@html).digest('hex')
@@ -36,11 +37,8 @@ class Client
       pngFull: pngFull
       pngThumb: pngThumb
     @_lastHtml = @html
-    
-    # return a clone as @_filePaths might change
-    filePaths = {}
-    filePaths[key] = value for key, value of @_filePaths
-    filePaths
+    # return a clone as @_filePaths could change
+    helpers.clone @_filePaths
   
   captureFull: (cb) =>
     # capture these parameters to prevent changes between callbacks
