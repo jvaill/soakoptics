@@ -1,25 +1,26 @@
 {log} = require('util')
 fs = require('fs')
+wrench = require('wrench')
 path = require('path')
 http = require('http')
 paperboy = require('paperboy')
 
 init = ->
+  BASE_PATH = 'public/browsershots'
   directories = [
-    'browsershots',
-    'browsershots/html',
-    'browsershots/png-full',
-    'browsershots/png-thumb'
+    "#{BASE_PATH}/html",
+    "#{BASE_PATH}/png-full",
+    "#{BASE_PATH}/png-thumb"
   ]
   
   # create required directories
   for directory in directories
     unless fs.existsSync(directory)
       log "creating directory #{directory}"
-      fs.mkdirSync(directory)
+      wrench.mkdirSyncRecursive directory
 
 startPaperboy = ->
-  webroot = path.resolve('browsershots')
+  webroot = path.resolve('public')
   server = http.createServer (req, res) ->
     paperboy.deliver webroot, req, res
   server.listen 2724

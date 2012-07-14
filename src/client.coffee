@@ -18,6 +18,7 @@ class Client
   emit: (params...) -> @socket.emit(params...) if @isConnected()
   
   filePaths: (type) =>
+    BASE_PATH = 'public/browsershots'
     throw new Error('html must be set') unless @html?
     return helpers.clone(@_filePaths) if @_filePaths? and @_lastHtml == @html
     
@@ -28,9 +29,9 @@ class Client
     pngFilename = "#{@viewportWidth}x#{@viewportHeight}-#{pngFilename}" if @viewportWidth? and @viewportHeight?
     
     # build the absolute paths
-    htm = path.resolve("browsershots/html/#{md5}.htm")
-    pngFull = path.resolve("browsershots/png-full/#{pngFilename}")
-    pngThumb = path.resolve("browsershots/png-thumb/#{pngFilename}")
+    htm = path.resolve("#{BASE_PATH}/html/#{md5}.htm")
+    pngFull = path.resolve("#{BASE_PATH}/png-full/#{pngFilename}")
+    pngThumb = path.resolve("#{BASE_PATH}/png-thumb/#{pngFilename}")
     
     @_filePaths =
       htm: htm
