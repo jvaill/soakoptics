@@ -6,11 +6,11 @@ http = require('http')
 paperboy = require('paperboy')
 
 init = ->
-  BASE_PATH = 'public/browsershots'
+  BROWSERSHOTS_PATH = 'public/browsershots'
   directories = [
-    "#{BASE_PATH}/html",
-    "#{BASE_PATH}/png-full",
-    "#{BASE_PATH}/png-thumb"
+    "#{BROWSERSHOTS_PATH}/html",
+    "#{BROWSERSHOTS_PATH}/png-full",
+    "#{BROWSERSHOTS_PATH}/png-thumb"
   ]
   
   # create required directories
