@@ -26,14 +26,20 @@ build = (watch, callback) ->
     callback?() if code is 0
 
 clean = ->
-  directories = ['lib', 'browsershots/html', 'browsershots/png-full', 'browsershots/png-thumb']
-  # clear directories of files
+  directories = [
+    'lib/libraries',
+    'lib',
+    'browsershots/html',
+    'browsershots/png-full',
+    'browsershots/png-thumb'
+  ]
+  
+  # delete directories
   for directory in directories
     if fs.existsSync(directory)
       files = fs.readdirSync(directory)
       fs.unlinkSync("#{directory}/#{file}") for file in files
-  
-  fs.rmdirSync 'lib' if fs.existsSync('lib')
+      fs.rmdirSync directory
 
 task 'start', 'Run and watch src/ for changes', ->
   start()
