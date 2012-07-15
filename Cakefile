@@ -42,8 +42,10 @@ build = (watch, callback) ->
     process.stderr.write data.toString()
   coffee.stdout.on 'data', (data) ->
     print data.toString()
+    # watch includes the browser libraries, move them into public
     moveBrowserLibraries() if watch
   coffee.on 'exit', (code) ->
+    # build includes the browser libraries, move them into public
     moveBrowserLibraries() unless watch
     callback?() if code is 0
 
